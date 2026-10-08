@@ -1,6 +1,6 @@
 # pretty
 
-Wadler-style pretty printing, for [Meadow](https://github.com/mcdearman/meadow).
+Wadler-style pretty printing, for [Meadow](https://github.com/meadow-lang/meadow).
 You build a document from text, line breaks, groups and nesting. Rendering
 lays it out in a given width: each group goes on one line if it fits, and is
 broken if it does not.
@@ -8,13 +8,13 @@ broken if it does not.
 This package is a port of Rust's [`pretty`](https://github.com/Marwes/pretty.rs)
 0.12.5. It renders documents exactly as the crate does, annotations included.
 Text that is not ASCII is measured with
-[unicodeWidth](https://github.com/mcdearman/UnicodeWidth), the port of
+[unicodeWidth](https://github.com/meadow-lang/UnicodeWidth), the port of
 the `unicode-width` version the crate uses.
 
 ## Install
 
 ```sh
-meadow add mcdearman/Pretty
+meadow add meadow-lang/Pretty
 ```
 
 ## Use
