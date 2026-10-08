@@ -3,4 +3,4 @@ name = "Pretty"
 version = "0.2.1"
 
 [dependencies]
-UnicodeWidth = { git = "https://github.com/mcdearman/UnicodeWidth", version = "0.2.0" }
+UnicodeWidth = { git = "https://github.com/meadow-lang/UnicodeWidth", version = "0.2.0" }
