@@ -80,10 +80,7 @@ fun fitDoc d pending rest mode pos ind width =
        | (last, p1) ->
            match rightsOnto l (last :: p1) with
            | (first, p2) -> fitDoc first p2 rest mode pos ind width)
-  | Doc.Hardline ->
-      (match mode with
-       | Mode.Break -> True
-       | Mode.Flat -> False)
+  | Doc.Hardline -> (match mode with | Mode.Break -> True | Mode.Flat -> False)
   | Doc.RenderLen len _ -> fitText len pending rest mode pos ind width
   | Doc.Text t -> fitText (S.byteLength t) pending rest mode pos ind width
   | Doc.FlatAlt broken flat ->
@@ -98,10 +95,12 @@ fun fitDoc d pending rest mode pos ind width =
   | Doc.Union _ next -> fitDoc next pending rest mode pos ind width
   | Doc.Fail -> False
 
-fun dropTop n xs = if n <= 0 then xs else
-  match xs with
-  | Cons _ rest -> dropTop (n - 1) rest
-  | Nil -> Nil
+fun dropTop n xs =
+  if n <= 0 then xs
+  else
+    match xs with
+    | Cons _ rest -> dropTop (n - 1) rest
+    | Nil -> Nil
 
 -- Ends the annotations whose content is done: the crate's loop after each
 -- command.
@@ -114,8 +113,7 @@ fun closeLevels (s : State a) =
 -- Runs commands until the stack is down to `top` entries: the crate's
 -- `best`. Gives whether all text fitted, or `None` if the document failed.
 fun bestFrom top fits (s : State a) =
-  if top >= s.size
-  then (Just fits, s)
+  if top >= s.size then (Just fits, s)
   else
     match s.stack with
     | Cons cmd rest ->
@@ -147,13 +145,17 @@ fun runCommand (ind, mode, d) fits (s : State a) =
   | Doc.Hardline ->
       (match s.stack with
        | Cons (nextInd, nextMode, next) rest ->
-           runCommand (nextInd, nextMode, next) fits (newline nextInd { s | stack = rest, size = s.size - 1 })
+           runCommand
+             (nextInd, nextMode, next)
+             fits
+             (newline nextInd { s | stack = rest, size = s.size - 1 })
        | Nil -> (Just fits, newline ind s))
   | Doc.RenderLen len t -> wrote len t fits s
   | Doc.Text t -> wrote (S.byteLength t) t fits s
   | Doc.Annotated ann inner ->
-      let s1 = emit (Chunk.Push ann) { s | levels = s.size :: s.levels, levelCount = s.levelCount + 1 } in
-      runCommand (ind, mode, inner) fits s1
+      let s1 =
+        emit (Chunk.Push ann) { s | levels = s.size :: s.levels, levelCount = s.levelCount + 1 }
+      in runCommand (ind, mode, inner) fits s1
   | Doc.Union l r ->
       let size = s.size in
       let trial = push ind mode l { s | out = V.empty } in
@@ -163,16 +165,14 @@ fun runCommand (ind, mode, d) fits (s : State a) =
            let kept = s1.levelCount - s.levelCount in
            let back =
              {
-               s1 |
-               pos = s.pos,
+               s1 | pos = s.pos,
                out = s.out,
                stack = dropTop (s1.size - size) s1.stack,
                size = min size s1.size,
                levels = dropTop kept s1.levels,
                levelCount = min s.levelCount s1.levelCount
              }
-           in
-           runCommand (ind, mode, r) fits back)
+           in runCommand (ind, mode, r) fits back)
   | Doc.Column f -> runCommand (ind, mode, f s.pos) fits s
   | Doc.Nesting f -> runCommand (ind, mode, f ind) fits s
   | Doc.Fail -> (None, s)
@@ -204,23 +204,14 @@ fun merged chunks =
       levelCount = 0,
       out = V.empty
     }
-  in
-  match bestFrom 0 True start with
-  | (Just _, s) -> Ok (merged s.out)
-  | (None, _) -> Err "Document failed to render"
+  in match bestFrom 0 True start with
+     | (Just _, s) -> Ok (merged s.out)
+     | (None, _) -> Err "Document failed to render"
 
 -- `d` laid out in `width` columns, or `Err` if the document failed.
 @pub fun render width (d : Doc a) =
   match renderChunks width d with
-  | Ok chunks ->
-      Ok
-        (S.concatAll
-          (V.map
-            (\c ->
-              match c with
-              | Chunk.Write t -> t
-              | _ -> "")
-            chunks))
+  | Ok chunks -> Ok (S.concatAll (V.map (\c -> match c with | Chunk.Write t -> t | _ -> "") chunks))
   | Err e -> Err e
 
 -- `d` laid out in `width` columns, and printed.
