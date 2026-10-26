@@ -16,7 +16,8 @@ use UnicodeWidth (width)
 -- they are made by hand. `text` makes a `RenderLen` of text that is not all
 -- ASCII, measured in terminal columns. The crate calls `Empty` `Nil`, a name
 -- Meadow's lists already use.
-@pub data Doc a =
+@pub data Doc a
+  =
   | Empty
   | Append (Doc a) (Doc a)
   | Group (Doc a)
@@ -46,17 +47,14 @@ use UnicodeWidth (width)
 fun isAscii s =
   let bytes = stringToBytes s in
   let n = arrayLen bytes in
-  let rec go i = if i >= n then True else if toInt (arrayGet bytes i) < 128 then go (i + 1) else False in
-  go 0
+  let rec go i =
+    if i >= n then True else if toInt (arrayGet bytes i) < 128 then go (i + 1) else False
+  in go 0
 
 -- `s` as a document: empty text is `nil`, and text that is not all ASCII is
 -- measured in the columns it takes.
 @pub fun text s =
-  if S.isEmpty s
-  then Doc.Empty
-  else if isAscii s
-  then Doc.Text s
-  else Doc.RenderLen (width s) s
+  if S.isEmpty s then Doc.Empty else if isAscii s then Doc.Text s else Doc.RenderLen (width s) s
 
 -- A value as text: the crate's `as_string`.
 @pub fun asString x = text "${x}"
@@ -141,13 +139,11 @@ fun splitWhitespace s =
   let cs = stringToChars s in
   let n = arrayLen cs in
   let rec go i start acc =
-    if i >= n
-    then V.pushBack acc (charsToString (arraySlice cs start n))
-    else if isWhitespace (arrayGet cs i)
-    then go (i + 1) (i + 1) (V.pushBack acc (charsToString (arraySlice cs start i)))
+    if i >= n then V.pushBack acc (charsToString (arraySlice cs start n))
+    else if isWhitespace (arrayGet cs i) then
+      go (i + 1) (i + 1) (V.pushBack acc (charsToString (arraySlice cs start i)))
     else go (i + 1) start acc
-  in
-  go 0 0 V.empty
+  in go 0 0 V.empty
 
 -- The words of `s`, with a `softline` between each two, so that they fill
 -- lines.
@@ -163,11 +159,11 @@ fun splitWhitespace s =
 -- `adjust` spaces, as the crate writes them: text of at most 100 at a time.
 fun spaces adjust =
   let rec go remaining acc =
-    if remaining <= 0 then acc else
+    if remaining <= 0 then acc
+    else
       let n = min 100 remaining in
       go (remaining - n) (append acc (text (S.repeat " " n)))
-  in
-  go adjust nil
+  in go adjust nil
 
 -- `d`, indented `adjust` spaces, the first line included.
 @pub fun indent adjust (d : Doc x) = hang adjust (append (spaces adjust) d)
@@ -191,7 +187,4 @@ fun spaces adjust =
 @pub fun brackets d = enclose (text "[") (text "]") d
 
 -- `Just` a document, or `nil`: the crate's `pretty` for `Option`.
-@pub fun optional m =
-  match m with
-  | Just d -> d
-  | None -> nil
+@pub fun optional m = match m with | Just d -> d | None -> nil
